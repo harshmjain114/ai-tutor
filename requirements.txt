@@ -1,0 +1,22 @@
+# Minimum requirements
+
+# Flask==2.3.0
+# google-cloud-storage==2.10.0
+# google-cloud==3.0.2
+# sentence-transformers==2.2.0
+# PyPDF2==3.0.0
+# google-cloud-aiplatform==1.26.0
+# vertexai==0.3.0
+
+# Latest Versions
+Flask==3.1.0
+Flask-WTF==1.2.2
+PyPDF2==3.0.1
+google-cloud-storage==3.1.0
+sentence-transformers==4.1.0
+google-cloud-aiplatform==1.90.0
+vertexai==1.71.1
+
+
+# to install those
+# pip install -r requirements.txt
