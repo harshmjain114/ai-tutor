@@ -1,0 +1,58 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>NCERT Chat</title>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+  <style>
+
+  </style>
+</head>
+<body>
+  <div class="chat-container">
+    <div class="chat-header">📘 NCERT AI Tutor</div>
+    <div class="chat-messages" id="chat">
+      <div class="message bot"><div class="bubble bot">Hi! 👋 I'm your NCERT Guide.</div></div>
+      <div class="message bot"><div class="bubble bot">Please select your board:</div></div>
+      <div class="options" id="board-options">
+        <button class="option-button" onclick="selectBoard(this, 'NCERT')">NCERT</button>
+      </div>
+
+      <div class="message bot"><div class="bubble bot">Select your class:</div></div>
+      <div class="options" id="class-options">
+        <button class="option-button" onclick="selectClass(this, 'Class 8')">Class 8</button>
+        <button class="option-button" onclick="selectClass(this, 'Class_9')">Class 9</button>
+      </div>
+
+      <div class="message bot"><div class="bubble bot">Select your subject:</div></div>
+      <div class="options" id="subject-options">
+        <button class="option-button" onclick="selectSubject(this, 'Science')">Science</button>
+        <button class="option-button" onclick="selectSubject(this, 'Math')">Math</button>
+      </div>
+
+      <div class="message bot"><div class="bubble bot">Select your chapter:</div></div>
+      <div class="options" id="chapter-options">
+        <button class="option-button" onclick="selectChapter(this, 'Chapter_1.pdf')">Chapter 1</button>
+        <button class="option-button" onclick="selectChapter(this, 'Chapter_2.pdf')">Chapter 2</button>
+      </div>
+
+
+      <div class="submit-button-container">
+        <button id="submitButton" onclick="submitPath()"> Submit </button>
+      </div>
+
+    </div>
+
+    
+    <div class="chat-input" id="chatInput">
+      <input type="text" id="userQuestion" placeholder="Ask your question..." onkeydown="handleQuestion(event)" >
+      <button onclick="handleQuestion(event)"> ↪ </button>
+    </div>
+
+  </div>
+
+  <script src="{{ url_for('static', filename='script.js') }}"></script>
+</body>
+</html>
