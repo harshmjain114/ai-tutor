@@ -1,0 +1,400 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>AI Tutor Chat</title>
+    <link href="https://fonts.googleapis.com/css2?family=Nunito+Sans:wght@400;600;700&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --primary-color: #4a1fb8;
+            --secondary-color: #6c5ce7;
+            --light-gray: #f5f7fa;
+            --white: #ffffff;
+            --dark-gray: #333333;
+            --sidebar-width: 280px;
+        }
+
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+        }
+
+        body {
+            font-family: 'Nunito Sans', sans-serif;
+            background-color: var(--light-gray);
+            color: var(--dark-gray);
+            display: flex;
+            min-height: 100vh;
+        }
+
+        /* Sidebar Styles */
+        .sidebar {
+            width: var(--sidebar-width);
+            background-color: var(--white);
+            box-shadow: 2px 0 10px rgba(0,0,0,0.1);
+            padding: 20px;
+            height: 100vh;
+            overflow-y: auto;
+            transition: all 0.3s ease;
+            position: relative;
+        }
+
+        .sidebar-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 20px;
+            padding-bottom: 15px;
+            border-bottom: 1px solid #eee;
+        }
+
+        .sidebar-title {
+            font-size: 1.2rem;
+            font-weight: 700;
+            color: var(--primary-color);
+        }
+
+        .history-container {
+            margin-top: 20px;
+        }
+
+        .history-item {
+            padding: 10px;
+            margin-bottom: 8px;
+            border-radius: 6px;
+            background-color: #f9f9f9;
+            cursor: pointer;
+            transition: all 0.2s ease;
+        }
+
+        .history-item:hover {
+            background-color: #eee;
+        }
+
+        /* Main Chat Area */
+        .main-content {
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+            height: 100vh;
+        }
+
+        .chat-header {
+            padding: 15px 20px;
+            background-color: var(--white);
+            box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .user-info {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .logout-btn {
+            background: none;
+            border: none;
+            color: var(--primary-color);
+            cursor: pointer;
+            font-weight: 600;
+        }
+
+        .logout-btn:hover {
+            text-decoration: underline;
+        }
+
+        .chat-messages {
+            flex: 1;
+            padding: 20px;
+            overflow-y: auto;
+            max-width: 800px;
+            margin: 0 auto;
+            width: 100%;
+        }
+
+        .message {
+            margin-bottom: 15px;
+            display: flex;
+        }
+
+        .message.bot {
+            justify-content: flex-start;
+        }
+
+        .message.user {
+            justify-content: flex-end;
+        }
+
+        .bubble {
+            max-width: 70%;
+            padding: 12px 16px;
+            border-radius: 18px;
+            line-height: 1.4;
+        }
+
+        .bubble.bot {
+            background-color: var(--white);
+            border: 1px solid #eee;
+            border-bottom-left-radius: 4px;
+        }
+
+        .bubble.user {
+            background-color: var(--primary-color);
+            color: var(--white);
+            border-bottom-right-radius: 4px;
+        }
+
+        /* Options Selection */
+        .options {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 10px;
+            margin: 10px 0 20px;
+        }
+
+        .option-button {
+            padding: 8px 16px;
+            background-color: var(--white);
+            border: 1px solid #ddd;
+            border-radius: 20px;
+            cursor: pointer;
+            transition: all 0.2s ease;
+        }
+
+        .option-button:hover {
+            background-color: #f0f0f0;
+        }
+
+        .option-button.selected {
+            background-color: var(--primary-color);
+            color: var(--white);
+            border-color: var(--primary-color);
+        }
+
+        /* Chat Input */
+        .chat-input {
+            padding: 15px 20px;
+            background-color: var(--white);
+            border-top: 1px solid #eee;
+            display: flex;
+            gap: 10px;
+        }
+
+        .chat-input input {
+            flex: 1;
+            padding: 12px 15px;
+            border: 1px solid #ddd;
+            border-radius: 24px;
+            font-size: 16px;
+        }
+
+        .chat-input button {
+            padding: 12px 20px;
+            background-color: var(--primary-color);
+            color: var(--white);
+            border: none;
+            border-radius: 24px;
+            cursor: pointer;
+            font-weight: 600;
+        }
+
+        .chat-input button:hover {
+            background-color: var(--secondary-color);
+        }
+
+        /* Submit Button */
+        .submit-button-container {
+            margin: 20px 0;
+            text-align: center;
+        }
+
+        #submitButton {
+            padding: 12px 24px;
+            background-color: var(--primary-color);
+            color: var(--white);
+            border: none;
+            border-radius: 24px;
+            cursor: pointer;
+            font-weight: 600;
+            font-size: 16px;
+        }
+
+        #submitButton:hover {
+            background-color: var(--secondary-color);
+        }
+
+        #submitButton:disabled {
+            background-color: #ccc;
+            cursor: not-allowed;
+        }
+
+        /* Responsive Design */
+        @media (max-width: 768px) {
+            body {
+                flex-direction: column;
+            }
+            
+            .sidebar {
+                width: 100%;
+                height: auto;
+                max-height: 200px;
+            }
+            
+            .main-content {
+                height: auto;
+            }
+        }
+        /* Processing message styles */
+        .message.processing {
+            opacity: 0.8;
+        }
+
+        .processing-message {
+            display: flex;
+            align-items: center;
+        }
+
+        .processing-dots {
+            display: inline-flex;
+            margin-left: 5px;
+        }
+
+        .processing-dots .dot {
+            animation: bounce 1.5s infinite ease-in-out;
+            animation-delay: calc(var(--dot-index) * 0.2s);
+        }
+
+        .processing-dots .dot:nth-child(1) { --dot-index: 1; }
+        .processing-dots .dot:nth-child(2) { --dot-index: 2; }
+        .processing-dots .dot:nth-child(3) { --dot-index: 3; }
+
+        @keyframes bounce {
+            0%, 100% { transform: translateY(0); }
+            50% { transform: translateY(-3px); }
+        }
+
+        /* Error message styles */
+        .message.error .bubble {
+            background-color: #ffebee;
+            border: 1px solid #ffcdd2;
+            color: #c62828;
+        }
+        /* Add to your existing CSS */
+.message.debug-info {
+    background-color: #f8f9fa;
+    border-left: 4px solid #6c757d;
+    margin: 10px 0;
+    padding: 10px;
+}
+
+.debug-toggle {
+    color: #007bff;
+    cursor: pointer;
+    font-weight: bold;
+    margin-bottom: 5px;
+}
+
+.debug-toggle:hover {
+    text-decoration: underline;
+}
+
+.debug-content.hidden {
+    display: none;
+}
+
+.debug-content {
+    background-color: white;
+    border: 1px solid #dee2e6;
+    border-radius: 4px;
+    padding: 10px;
+    margin-top: 5px;
+}
+
+.debug-content h4, .debug-content h5 {
+    color: #495057;
+    margin-top: 10px;
+}
+
+.context-preview {
+    background-color: #f1f1f1;
+    border-radius: 4px;
+    padding: 8px;
+    white-space: pre-wrap;
+    max-height: 200px;
+    overflow-y: auto;
+}
+    </style>
+</head>
+<body>
+    <!-- Sidebar for Chat History -->
+    <aside class="sidebar" id="sidebar">
+        <div class="sidebar-header">
+            <h2 class="sidebar-title">Chat History</h2>
+            <button class="logout-btn" id="sidebar-logout">Logout</button>
+        </div>
+        <div class="history-container" id="history-container">
+            <!-- History items will be loaded dynamically -->
+            <div class="empty-history">No chat history yet</div>
+        </div>
+    </aside>
+
+    <!-- Main Chat Area -->
+    <main class="main-content">
+        <header class="chat-header">
+            <h1>AI Tutor</h1>
+            <div class="user-info">
+                <span id="user-name">Guest</span>
+            </div>
+        </header>
+
+        <div class="chat-messages" id="chat">
+            <!-- Initial bot message -->
+            <div class="message bot">
+                <div class="bubble bot">Hi! 👋 I'm your AI Guide. Please select your board:</div>
+            </div>
+
+            <!-- Board Selection -->
+            <div class="options" id="board-options">
+                <button class="option-button" data-value="NCERT">NCERT</button>
+                <button class="option-button" data-value="NCERT">NCERT</button>
+            </div>
+
+            <!-- Class Selection (will be shown after board is selected) -->
+            <div class="message bot hidden" id="class-message">
+                <div class="bubble bot">Select your class:</div>
+            </div>
+            <div class="options hidden" id="class-options"></div>
+
+            <!-- Subject Selection (will be shown after class is selected) -->
+            <div class="message bot hidden" id="subject-message">
+                <div class="bubble bot">Select your subject:</div>
+            </div>
+            <div class="options hidden" id="subject-options"></div>
+
+            <!-- Chapter Selection (will be shown after subject is selected) -->
+            <div class="message bot hidden" id="chapter-message">
+                <div class="bubble bot">Select your chapter:</div>
+            </div>
+            <div class="options hidden" id="chapter-options"></div>
+
+            <!-- Submit Button (will be shown after all selections are made) -->
+            <div class="submit-button-container hidden" id="submit-container">
+                <button id="submitButton" disabled>Submit</button>
+            </div>
+        </div>
+
+        <!-- Chat Input (shown after submission) -->
+        <div class="chat-input hidden" id="chat-input">
+            <input type="text" id="userQuestion" placeholder="Ask your question...">
+            <button id="sendButton">Send</button>
+        </div>
+    </main>
+
+    <script src="{{ url_for('static', filename='chat.js') }}"></script>
+</body>
+</html>

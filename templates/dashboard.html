@@ -1,0 +1,289 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Dashboard | AI Tutor</title>
+    <link href="https://fonts.googleapis.com/css2?family=Nunito+Sans:wght@400;600;700&display=swap" rel="stylesheet">
+    <!-- Add Firebase SDK -->
+    <script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-app-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore-compat.js"></script>
+    <style>
+        :root {
+            --primary-color: #4a1fb8;
+            --secondary-color: #6c5ce7;
+            --light-color: #f8f9fa;
+            --dark-color: #343a40;
+        }
+        
+        body {
+            font-family: 'Nunito Sans', sans-serif;
+            margin: 0;
+            padding: 0;
+            background-color: #f5f7fa;
+        }
+        
+        .dashboard-container {
+            display: grid;
+            grid-template-columns: 250px 1fr;
+            min-height: 100vh;
+        }
+        
+        .sidebar {
+            background-color: #fff;
+            box-shadow: 2px 0 10px rgba(0,0,0,0.1);
+            padding: 20px;
+        }
+        
+        .sidebar button {
+            display: block;
+            width: 100%;
+            padding: 12px;
+            margin-bottom: 10px;
+            background: var(--primary-color);
+            color: white;
+            border: none;
+            border-radius: 8px;
+            cursor: pointer;
+            font-size: 16px;
+        }
+        
+        .main-content {
+            padding: 30px;
+        }
+        
+        .welcome-header {
+            margin-bottom: 30px;
+        }
+        
+        .subjects-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+            gap: 20px;
+            margin-bottom: 40px;
+        }
+        
+        .subject-card {
+            background: white;
+            border-radius: 10px;
+            padding: 20px;
+            box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+            text-align: center;
+            cursor: pointer;
+            transition: transform 0.3s;
+        }
+        
+        .subject-card:hover {
+            transform: translateY(-5px);
+        }
+        
+        .performance-section h2 {
+            margin-bottom: 20px;
+        }
+        
+        .performance-cards {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(250px, 1fr));
+            gap: 15px;
+        }
+        
+        .performance-card {
+            background: white;
+            border-radius: 10px;
+            padding: 15px;
+            box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+        }
+        
+        .progress-bar {
+            height: 10px;
+            background: #e0e0e0;
+            border-radius: 5px;
+            margin-top: 10px;
+            overflow: hidden;
+        }
+        
+        .progress-fill {
+            height: 100%;
+            background: var(--primary-color);
+            width: 0%;
+            transition: width 1s ease;
+        }
+        
+        .loading, .no-data, .error {
+            padding: 20px;
+            text-align: center;
+            grid-column: 1 / -1;
+        }
+        
+        .mock-data {
+            opacity: 0.7;
+            border-left: 3px solid #fbbc05;
+        }
+    </style>
+</head>
+<body>
+    <div class="dashboard-container">
+        <div class="sidebar">
+            <h2>Navigation</h2>
+            <button onclick="window.location.href='/chat.html'">Chat with AI</button>
+            <button onclick="window.location.href='/quiz.html'">Take Quiz</button>
+            <button onclick="logout()">Logout</button>
+        </div>
+        
+        <div class="main-content">
+            <div class="welcome-header">
+                <h1>Welcome, <span id="username"></span></h1>
+                <p> <span id="user-class"></span> | <span id="user-stream"></span></p>
+            </div>
+            
+            <div class="subjects-section">
+                <h2>Your Subjects</h2>
+                <div class="subjects-grid" id="subjects-container">
+                    <!-- Subjects will be loaded here -->
+                </div>
+            </div>
+            
+            <div class="performance-section">
+                <h2>Your Performance</h2>
+                <div class="performance-cards" id="performance-container">
+                    <!-- Quiz scores will be loaded here -->
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // Your Firebase configuration (replace with your actual config)
+        const firebaseConfig = {
+            apiKey: "AIzaSy...",
+            authDomain: "your-project.firebaseapp.com",
+            projectId: "your-project",
+            storageBucket: "your-project.appspot.com",
+            messagingSenderId: "123456789",
+            appId: "1:123456789:web:abcdef123456"
+        };
+
+        // Initialize Firebase
+        if (!firebase.apps.length) {
+            firebase.initializeApp(firebaseConfig);
+        }
+        const db = firebase.firestore();
+
+        // Load user data on page load
+        document.addEventListener('DOMContentLoaded', async () => {
+            // Get user data from session
+            const response = await fetch('/api/user');
+            const userData = await response.json();
+            
+            // Display basic info
+            document.getElementById('username').textContent = userData.user.name;
+            document.getElementById('user-class').textContent = `Class ${userData.user.class}`;
+            document.getElementById('user-stream').textContent = userData.user.stream !== 'NA' ? 
+                userData.user.stream : '';
+            
+            // Load subjects based on class/stream
+            loadSubjects(userData.user.class, userData.user.stream);
+            
+            // Load performance data
+            loadPerformanceData(userData.user.email);
+        });
+        
+        function loadSubjects(classLevel, stream) {
+            const subjectsContainer = document.getElementById('subjects-container');
+            let subjects = [];
+            
+            // Common subjects for all classes
+            const commonSubjects = ['English', 'Maths', 'Science'];
+            
+            // Class-specific subjects
+            if (classLevel >= 6 && classLevel <= 10) {
+                subjects = ['Social Studies',...commonSubjects];
+            } else if (classLevel >= 11 && classLevel <= 12) {
+                if (stream === 'Science') {
+                    subjects = ['Physics', 'Chemistry', 'Biology', ...commonSubjects];
+                } else if (stream === 'Commerce') {
+                    subjects = ['Accountancy', 'Business Studies', 'Economics', ...commonSubjects];
+                } else {
+                    subjects = ['History', 'Political Science', 'Geography', ...commonSubjects];
+                }
+            }
+            
+            // Render subject cards
+            subjectsContainer.innerHTML = subjects.map(subject => `
+                <div class="subject-card" onclick="openSubject('${subject}')">
+                    <h3>${subject}</h3>
+                </div>
+            `).join('');
+        }
+        
+        async function loadPerformanceData(email) {
+            const performanceContainer = document.getElementById('performance-container');
+            
+            // Show loading state
+            performanceContainer.innerHTML = '<div class="loading">Loading performance data...</div>';
+            
+            try {
+                // Fetch performance data from Firestore
+                const docRef = db.collection('performance').doc(email);
+                const doc = await docRef.get();
+                
+                if (doc.exists) {
+                    const performanceData = doc.data();
+                    
+                    // Generate HTML for performance cards
+                    performanceContainer.innerHTML = Object.entries(performanceData)
+                        .map(([subject, score]) => `
+                            <div class="performance-card">
+                                <h3>${subject}</h3>
+                                <p>${score}%</p>
+                                <div class="progress-bar">
+                                    <div class="progress-fill" style="width: ${score}%"></div>
+                                </div>
+                            </div>
+                        `).join('');
+                } else {
+                    // No data found for this user
+                    performanceContainer.innerHTML = '<div class="no-data">No performance data available</div>';
+                }
+            } catch (error) {
+                console.error("Error loading performance data:", error);
+                performanceContainer.innerHTML = `
+                    <div class="error">
+                        Failed to load performance data. 
+                        ${error.message}
+                    </div>
+                `;
+                
+                // Fallback to mock data in case of error (for development)
+                const mockData = {
+                    'Maths': 0,
+                    'Science': 0,
+                    'English': 0,
+                    'Social Studies': 0
+                };
+                
+                performanceContainer.innerHTML += Object.entries(mockData)
+                    .map(([subject, score]) => `
+                        <div class="performance-card mock-data">
+                            <h3>${subject} (Mock Data)</h3>
+                            <p>${score}%</p>
+                            <div class="progress-bar">
+                                <div class="progress-fill" style="width: ${score}%"></div>
+                            </div>
+                        </div>
+                    `).join('');
+            }
+        }
+        
+        function openSubject(subject) {
+            localStorage.setItem('currentSubject', subject);
+            window.location.href = '/chat.html';
+        }
+        
+        function logout() {
+            fetch('/api/logout', { method: 'POST' })
+                .then(() => window.location.href = '/login.html');
+        }
+    </script>
+</body>
+</html>

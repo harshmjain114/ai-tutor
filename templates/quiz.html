@@ -1,0 +1,600 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Take Quiz | AI Tutor</title>
+    <link href="https://fonts.googleapis.com/css2?family=Nunito+Sans:wght@400;600;700&display=swap" rel="stylesheet">
+    
+    <style>
+        body {
+            font-family: 'Nunito Sans', sans-serif;
+            background-color: #f8f9fa;
+            margin: 0;
+            padding: 20px;
+            color: #333;
+        }
+        
+        .quiz-container {
+            max-width: 800px;
+            margin: 0 auto;
+            background: white;
+            padding: 25px;
+            border-radius: 12px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+        }
+        
+        .quiz-selection {
+            background: #f5f7fa;
+            padding: 20px;
+            border-radius: 10px;
+            margin-bottom: 20px;
+        }
+        
+        .quiz-options {
+            display: flex;
+            gap: 15px;
+            margin-bottom: 15px;
+            flex-wrap: wrap;
+        }
+        
+        select, button {
+            padding: 10px 15px;
+            border-radius: 8px;
+            border: 1px solid #ddd;
+            font-size: 16px;
+        }
+        
+        button {
+            background: #4a1fb8;
+            color: white;
+            border: none;
+            cursor: pointer;
+            transition: background 0.3s;
+        }
+        
+        button:hover {
+            background: #3a1a9a;
+        }
+        
+        button:disabled {
+            background: #cccccc;
+            cursor: not-allowed;
+        }
+        
+        #quizArea {
+            margin-top: 20px;
+        }
+        
+        .quiz-question {
+            background: #ffffff;
+            border: 1px solid #e0e0e0;
+            border-radius: 8px;
+            padding: 20px;
+            margin-bottom: 20px;
+            box-shadow: 0 1px 3px rgba(0,0,0,0.05);
+        }
+        
+        .quiz-question h3 {
+            margin-top: 0;
+            color: #2c3e50;
+        }
+        
+        .quiz-option {
+            display: block;
+            margin: 10px 0;
+            padding: 10px;
+            border-radius: 6px;
+            background: #f8f9fa;
+            cursor: pointer;
+            transition: background 0.2s;
+        }
+        
+        .quiz-option:hover {
+            background: #e9ecef;
+        }
+        
+        .quiz-option input[type="radio"] {
+            margin-right: 10px;
+        }
+        
+        .quiz-results {
+            background: white;
+            padding: 25px;
+            border-radius: 10px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+        }
+        
+        .score-display {
+            font-size: 24px;
+            font-weight: bold;
+            margin: 20px 0;
+            text-align: center;
+        }
+        
+        .high-score {
+            color: #27ae60;
+        }
+        
+        .medium-score {
+            color: #f39c12;
+        }
+        
+        .low-score {
+            color: #e74c3c;
+        }
+        
+        .answer-explanation {
+            margin-top: 15px;
+            padding: 15px;
+            background: #f8f9fa;
+            border-radius: 6px;
+            border-left: 4px solid #4a1fb8;
+        }
+        
+        .correct-answer {
+            color: #27ae60;
+            font-weight: bold;
+        }
+        
+        .incorrect-answer {
+            color: #e74c3c;
+        }
+        
+        .explanation-title {
+            font-weight: bold;
+            margin-bottom: 8px;
+        }
+        
+        .error-message {
+            color: #e74c3c;
+            padding: 15px;
+            background: #fdecea;
+            border-radius: 6px;
+            margin: 20px 0;
+        }
+        
+        .loading {
+            text-align: center;
+            padding: 20px;
+            color: #7f8c8d;
+        }
+        
+        @media (max-width: 600px) {
+            .quiz-options {
+                flex-direction: column;
+                gap: 10px;
+            }
+            
+            select, button {
+                width: 100%;
+            }
+        }
+
+        .topic-recommendations {
+            margin-top: 30px;
+            background: #f0f7ff;
+            padding: 20px;
+            border-radius: 8px;
+            border-left: 4px solid #4a1fb8;
+        }
+        
+        .topic-item {
+            margin-bottom: 15px;
+        }
+        
+        .topic-name {
+            font-weight: bold;
+            display: block;
+            margin-bottom: 5px;
+        }
+        
+        .topic-score {
+            color: #666;
+            font-size: 0.9em;
+        }
+        
+        .progress-container {
+            width: 100%;
+            background: #e0e0e0;
+            border-radius: 4px;
+            margin: 5px 0;
+        }
+        
+        .progress-bar {
+            height: 8px;
+            border-radius: 4px;
+            background: #4a1fb8;
+        }
+        
+        .weak-topic {
+            background: #ffebee;
+            padding: 10px;
+            border-radius: 6px;
+            margin-top: 10px;
+        }
+        
+        .suggested-questions {
+            margin-top: 5px;
+            font-size: 0.9em;
+            color: #555;
+        }
+
+
+
+    </style>
+
+</head>
+<body>
+    <div class="quiz-container">
+        <button onclick="window.location.href='/dashboard.html'" style="margin-bottom: 20px;">
+            ← Back to Dashboard
+        </button>
+        
+        <div class="quiz-selection">
+            <h2>Select Quiz Parameters</h2>
+            <div class="quiz-options">
+                <select id="quizSubject">
+                    <option value="" disabled selected>Select Subject</option>
+                    <!-- Loaded dynamically -->
+                </select>
+                
+                <select id="quizChapter">
+                    <option value="" disabled selected>Select Chapter</option>
+                    <!-- Loaded dynamically -->
+                </select>
+                
+                <select id="quizDifficulty">
+                    <option value="easy">Easy</option>
+                    <option value="medium" selected>Medium</option>
+                    <option value="hard">Hard</option>
+                </select>
+            </div>
+            
+            <button onclick="startQuiz()">Start Quiz</button>
+        </div>
+        
+        <div id="quizArea">
+            <!-- Quiz will be loaded here -->
+        </div>
+    </div>
+
+    <script>
+        // Quiz state
+        let currentQuiz = {
+            questions: [],
+            correctAnswers: []
+        };
+        
+        // Load subjects based on user's class/stream
+        document.addEventListener('DOMContentLoaded', async () => {
+            const userRes = await fetch('/api/user');
+            const userData = await userRes.json();
+            
+            const subjectSelect = document.getElementById('quizSubject');
+            const classLevel = userData.user.class;
+            const stream = userData.user.stream;
+            
+            // Get subjects for this class/stream
+            const subjectsRes = await fetch(`/api/get-subjects?class=${classLevel}&stream=${stream}`);
+            const subjects = await subjectsRes.json();
+            
+            subjectSelect.innerHTML = `
+                <option value="" disabled selected>Select Subject</option>
+                ${subjects.map(subj => `<option value="${subj}">${subj}</option>`).join('')}
+            `;
+        });
+        
+        // When subject changes, load chapters
+        document.getElementById('quizSubject').addEventListener('change', async function() {
+            const subject = this.value;
+            const chapterSelect = document.getElementById('quizChapter');
+            
+            chapterSelect.disabled = true;
+            chapterSelect.innerHTML = '<option value="" disabled selected>Loading chapters...</option>';
+            
+            // Mock implementation - replace with actual API call
+            setTimeout(() => {
+                const mockChapters = [
+                    "chapter (1)",
+                    "chapter (2)",
+                    "chapter (3)",
+                    "chapter (4)",
+                    "chapter (5)",
+                    "chapter (6)",
+                    "chapter (7)",
+                    "chapter (8)"
+                ];
+                
+                chapterSelect.innerHTML = `
+                    <option value="" disabled selected>Select Chapter</option>
+                    ${mockChapters.map(chap => `<option value="${chap}">${chap}</option>`).join('')}
+                `;
+                chapterSelect.disabled = false;
+            }, 500);
+        });
+        
+       async function startQuiz() {
+    const subject = document.getElementById('quizSubject').value;
+    const chapter = document.getElementById('quizChapter').value;
+    const difficulty = document.getElementById('quizDifficulty').value;
+    
+    if (!subject || !chapter) {
+        alert('Please select both subject and chapter');
+        return;
+    }
+    
+    // Show loading state
+    document.getElementById('quizArea').innerHTML = `
+        <div class="loading">
+            <p>Preparing your quiz...</p>
+        </div>
+    `;
+    
+    try {
+        // Generate quiz (using your existing endpoint)
+        const response = await fetch('/generate-quiz', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({
+                subject: subject,
+                chapter: chapter,
+                difficulty: difficulty
+            })
+        });
+        
+        if (!response.ok) {
+            const errorData = await response.json();
+            throw new Error(errorData.error || 'Failed to generate quiz');
+        }
+        
+        const quizData = await response.json();
+        
+        if (quizData.questions && quizData.questions.length > 0) {
+            currentQuiz = {
+                questions: quizData.questions,
+                correctAnswers: quizData.questions.map(q => q.correctAnswer)
+            };
+            displayQuizQuestions(quizData.questions);
+        } else {
+            throw new Error('No questions generated');
+        }
+    } catch (error) {
+        document.getElementById('quizArea').innerHTML = `
+            <div class="error-message">
+                Failed to load quiz: ${error.message || 'Please try again later'}
+            </div>
+        `;
+    }
+}
+
+function displayQuizQuestions(questions) {
+    const quizHTML = questions.map((q, i) => `
+        <div class="quiz-question" data-question-index="${i}">
+            <h3>Question ${i+1}: ${q.question}</h3>
+            <p><small>Topic: ${q.topic || 'General'}</small></p>
+            <div class="quiz-options">
+                ${q.options.map((opt, j) => `
+                    <div class="quiz-option">
+                        <input type="radio" name="q${i}" id="q${i}_${j}" value="${j}">
+                        <label for="q${i}_${j}">${opt}</label>
+                    </div>
+                `).join('')}
+            </div>
+        </div>
+    `).join('');
+    
+    document.getElementById('quizArea').innerHTML = `
+        <h2>${document.getElementById('quizSubject').value} Quiz</h2>
+        <h3>${document.getElementById('quizChapter').value} (${document.getElementById('quizDifficulty').value})</h3>
+        <form id="quizForm">
+            ${quizHTML}
+            <div id="submitContainer" style="text-align: center; margin-top: 20px;">
+                <button type="button" id="submitBtn" onclick="submitQuiz()" disabled>Submit Quiz</button>
+            </div>
+        </form>
+    `;
+    
+    // Add validation to enable submit button only when all questions are answered
+    const radioButtons = document.querySelectorAll('input[type="radio"]');
+    radioButtons.forEach(radio => {
+        radio.addEventListener('change', validateQuizCompletion);
+    });
+}
+        function validateQuizCompletion() {
+            const totalQuestions = currentQuiz.questions.length;
+            const answeredQuestions = document.querySelectorAll('input[type="radio"]:checked').length;
+            
+            document.getElementById('submitBtn').disabled = answeredQuestions < totalQuestions;
+        }
+
+        async function submitQuiz() {
+            const form = document.getElementById('quizForm');
+            const questions = document.querySelectorAll('.quiz-question');
+            let score = 0;
+            let resultsHTML = '';
+            
+            // Track performance by topic
+            const topicPerformance = {};
+            
+            questions.forEach((q, i) => {
+                const questionIndex = parseInt(q.getAttribute('data-question-index'));
+                const selectedOption = q.querySelector('input[type="radio"]:checked');
+                const isCorrect = selectedOption && parseInt(selectedOption.value) === currentQuiz.correctAnswers[i];
+                
+                if (isCorrect) {
+                    score++;
+                }
+                
+                // Get question topic (fallback to extracting from question text)
+                const topic = currentQuiz.questions[i].topic || 
+                             extractTopicFromQuestion(currentQuiz.questions[i].question);
+                
+                // Initialize topic tracking if not exists
+                if (!topicPerformance[topic]) {
+                    topicPerformance[topic] = {
+                        correct: 0,
+                        total: 0,
+                        questions: []
+                    };
+                }
+                
+                // Update topic stats
+                topicPerformance[topic].total++;
+                if (isCorrect) {
+                    topicPerformance[topic].correct++;
+                } else {
+                    topicPerformance[topic].questions.push(currentQuiz.questions[i].question);
+                }
+                
+                // Build explanation for each question
+                const explanation = currentQuiz.questions[questionIndex].explanation || 
+                                   "No explanation provided for this question.";
+                
+                resultsHTML += `
+                    <div class="quiz-question">
+                        <h3>Question ${i+1}: ${currentQuiz.questions[i].question}</h3>
+                        <p><small>Topic: ${topic}</small></p>
+                        <p class="${isCorrect ? 'correct-answer' : 'incorrect-answer'}">
+                            Your answer: ${selectedOption ? currentQuiz.questions[i].options[parseInt(selectedOption.value)] : 'Not answered'}
+                            ${isCorrect ? '✅' : '❌'}
+                        </p>
+                        ${!isCorrect ? `
+                            <p class="correct-answer">
+                                Correct answer: ${currentQuiz.questions[i].options[currentQuiz.correctAnswers[i]]}
+                            </p>
+                        ` : ''}
+                        <div class="answer-explanation">
+                            <div class="explanation-title">Explanation:</div>
+                            <div>${explanation}</div>
+                        </div>
+                    </div>
+                `;
+            });
+            
+            const percentage = Math.round((score / questions.length) * 100);
+            let scoreClass = 'high-score';
+            if (percentage < 50) scoreClass = 'low-score';
+            else if (percentage < 75) scoreClass = 'medium-score';
+            
+            // Generate topic recommendations
+            const recommendationsHTML = generateTopicRecommendations(topicPerformance);
+            
+            // Show results
+            document.getElementById('quizArea').innerHTML = `
+                <div class="quiz-results">
+                    <h2>Quiz Results</h2>
+                    <div class="score-display ${scoreClass}">
+                        You scored ${score}/${questions.length} (${percentage}%)
+                    </div>
+                    
+                    ${recommendationsHTML}
+                    
+                    <h3>Question Review</h3>
+                    ${resultsHTML}
+                    
+                    <div style="text-align: center; margin-top: 30px;">
+                        <button onclick="window.location.href='/dashboard.html'">Back to Dashboard</button>
+                        <button onclick="startQuiz()" style="margin-left: 10px;">Try Again</button>
+                    </div>
+                </div>
+            `;
+            
+            // Save score to backend
+            try {
+                await fetch('/api/save-score', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({
+                        subject: document.getElementById('quizSubject').value,
+                        chapter: document.getElementById('quizChapter').value,
+                        difficulty: document.getElementById('quizDifficulty').value,
+                        score: percentage,
+                        weakTopics: getWeakTopics(topicPerformance),
+                        date: new Date().toISOString()
+                    })
+                });
+            } catch (error) {
+                console.error('Failed to save score:', error);
+            }
+        }
+        
+        function generateTopicRecommendations(topicPerformance) {
+            // Convert to array and sort by performance (worst first)
+            const topicsArray = Object.keys(topicPerformance).map(topic => ({
+                name: topic,
+                correct: topicPerformance[topic].correct,
+                total: topicPerformance[topic].total,
+                questions: topicPerformance[topic].questions,
+                percentage: Math.round((topicPerformance[topic].correct / topicPerformance[topic].total) * 100)
+            })).sort((a, b) => a.percentage - b.percentage);
+            
+            // Identify weak topics (below 60% correct)
+            const weakTopics = topicsArray.filter(topic => topic.percentage < 60);
+            
+            let recommendationsHTML = '';
+            
+            if (weakTopics.length > 0) {
+                recommendationsHTML = `
+                    <div class="topic-recommendations">
+                        <h3>Focus Areas for Improvement</h3>
+                        <p>Based on your performance, you should focus more on these topics:</p>
+                        
+                        ${weakTopics.map(topic => `
+                            <div class="topic-item">
+                                <span class="topic-name">${topic.name}</span>
+                                <span class="topic-score">${topic.correct}/${topic.total} correct (${topic.percentage}%)</span>
+                                <div class="progress-container">
+                                    <div class="progress-bar" style="width: ${topic.percentage}%"></div>
+                                </div>
+                                ${topic.questions.length > 0 ? `
+                                    <div class="weak-topic">
+                                        <div>Example questions you missed:</div>
+                                        <ul class="suggested-questions">
+                                            ${topic.questions.slice(0, 3).map(q => `<li>${q}</li>`).join('')}
+                                        </ul>
+                                        <div>Ask your tutor about these concepts!</div>
+                                    </div>
+                                ` : ''}
+                            </div>
+                        `).join('')}
+                    </div>
+                `;
+            } else {
+                recommendationsHTML = `
+                    <div class="topic-recommendations">
+                        <h3>Great Job!</h3>
+                        <p>You performed well on all topics. Keep up the good work!</p>
+                    </div>
+                `;
+            }
+            
+            return recommendationsHTML;
+        }
+        
+        function getWeakTopics(topicPerformance) {
+            return Object.keys(topicPerformance)
+                .map(topic => ({
+                    topic,
+                    correct: topicPerformance[topic].correct,
+                    total: topicPerformance[topic].total,
+                    percentage: Math.round((topicPerformance[topic].correct / topicPerformance[topic].total) * 100)
+                }))
+                .filter(topic => topic.percentage < 60);
+        }
+        
+        function extractTopicFromQuestion(questionText) {
+            // Simple topic extraction - you might want to enhance this
+            const cleaned = questionText
+                .replace(/^(what|why|how|when|where|which|who|name|list|describe|explain)\s+/i, '')
+                .replace(/\?/g, '')
+                .trim();
+            
+            // Take first meaningful phrase
+            const words = cleaned.split(/\s+/);
+            return words.slice(0, Math.min(6, words.length)).join(' ') || 'General Concepts';
+        }
+        
+    </script>
+</body>
+</html>

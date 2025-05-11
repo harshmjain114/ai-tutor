@@ -1,0 +1,215 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Chat with AI | AI Tutor</title>
+    <link href="https://fonts.googleapis.com/css2?family=Nunito+Sans:wght@400;600;700&display=swap" rel="stylesheet">
+    <style>
+        /* [Include all your existing chat CSS here] */
+        .selection-panel {
+            background: #f5f7fa;
+            padding: 20px;
+            border-radius: 10px;
+            margin-bottom: 20px;
+        }
+        .selection-row {
+            display: flex;
+            gap: 15px;
+            margin-bottom: 15px;
+        }
+        select {
+            flex: 1;
+            padding: 10px;
+            border-radius: 8px;
+            border: 1px solid #ddd;
+        }
+    </style>
+</head>
+<body>
+    <div class="chat-container">
+        <button onclick="window.location.href='/dashboard.html'" style="margin-bottom: 20px;">
+            ← Back to Dashboard
+        </button>
+        
+        <div class="selection-panel">
+            <div class="selection-row">
+                <select id="subject" onchange="loadChapters(this.value)">
+                    <option value="" disabled selected>Select Subject</option>
+                    <!-- Subjects loaded dynamically -->
+                </select>
+                
+                <select id="chapter" disabled>
+                    <option value="" disabled selected>Select Chapter</option>
+                    <!-- Chapters loaded dynamically -->
+                </select>
+            </div>
+            
+            <button id="startChatBtn" onclick="startChatSession()">
+                Start Chat Session
+            </button>
+        </div>
+        
+        <div class="chat-messages" id="chat">
+            <div class="message bot">
+                <div class="bubble bot">
+                    Please select a subject and chapter to begin chatting.
+                </div>
+            </div>
+        </div>
+        
+        <div class="chat-input" id="chatInput" >
+            <input type="text" id="userQuestion" placeholder="Ask your question..." onkeydown="handleQuestion(event)">
+            <button onclick="handleQuestion(event)">↪</button>
+        </div>
+    </div>
+
+
+
+    <!-- Add this script to your chat.html -->
+<script>
+    // Load user data and set up path structure
+    document.addEventListener('DOMContentLoaded', async () => {
+        const userRes = await fetch('/api/user');
+        const userData = await userRes.json();
+        
+        // Store user's board and class in localStorage
+        localStorage.setItem('board', userData.user.board);
+        localStorage.setItem('class', userData.user.class);
+        
+        // Set up subject dropdown
+        const subjectSelect = document.getElementById('subject');
+        const subjectsRes = await fetch('/api/get-subjects');
+        const subjects = await subjectsRes.json();
+        
+        subjectSelect.innerHTML = `
+            <option value="" disabled selected>Select Subject</option>
+            ${subjects.map(subj => `<option value="${subj}">${subj}</option>`).join('')}
+        `;
+    });
+
+// Modify the selectSubject function to load chapters
+async function selectSubject(selectElement) {
+    path.subject = selectElement.value;
+    const chapterSelect = document.getElementById('chapter');
+    chapterSelect.disabled = false;
+    chapterSelect.innerHTML = '<option value="" disabled selected>Loading chapters...</option>';
+    
+    // Fixed list of chapters since they follow a pattern
+    const chapters = [
+        "chapter (1)",
+        "chapter (2)",
+        "chapter (3)",
+        "chapter (4)",
+        "chapter (5)",
+        "chapter (6)",
+        "chapter (7)",
+        "chapter (8)"
+    ];
+    
+    chapterSelect.innerHTML = `
+        <option value="" disabled selected>Select Chapter</option>
+        ${chapters.map((chap, i) => `<option value="${chap}">${chap}</option>`).join('')}
+    `;
+}
+    function selectChapter(selectElement) {
+        path.chapter = selectElement.value;
+    }
+</script>
+
+    <script>
+        // Load subjects based on user's class/stream
+        document.addEventListener('DOMContentLoaded', async () => {
+            const userRes = await fetch('/api/user');
+            const userData = await userRes.json();
+            
+            const subjectSelect = document.getElementById('subject');
+            const classLevel = userData.user.class;
+            const stream = userData.user.stream;
+            
+            // Get subjects for this class/stream
+            const subjectsRes = await fetch(`/api/get-subjects?class=${classLevel}&stream=${stream}`);
+            const subjects = await subjectsRes.json();
+            
+            subjectSelect.innerHTML = `
+                <option value="" disabled selected>Select Subject</option>
+                ${subjects.map(subj => `<option value="${subj}">${subj}</option>`).join('')}
+            `;
+        });
+        
+        async function loadChapters(subject) {
+            const chapterSelect = document.getElementById('chapter');
+            chapterSelect.disabled = true;
+            chapterSelect.innerHTML = '<option value="" disabled selected>Loading chapters...</option>';
+            
+            // In a real app, fetch chapters from your backend/Google Cloud Storage
+            // This is a mock implementation
+            setTimeout(() => {
+                const mockChapters = [
+                "chapter (1)",
+                "chapter (2)",
+                "chapter (3)",
+                "chapter (4)",
+                "chapter (5)",
+                "chapter (6)",
+                "chapter (7)",
+                "chapter (8)"
+                ];
+                
+                chapterSelect.innerHTML = `
+                    <option value="" disabled selected>Select Chapter</option>
+                    ${mockChapters.map(chap => `<option value="${chap}">${chap}</option>`).join('')}
+                `;
+                chapterSelect.disabled = false;
+            }, 500);
+        }
+        
+        function startChatSession() {
+            const subject = document.getElementById('subject').value;
+            const chapter = document.getElementById('chapter').value;
+            
+            if (!subject || !chapter) {
+                alert('Please select both subject and chapter');
+                return;
+            }
+            
+            // Store selections (you might want to use more persistent storage)
+            sessionStorage.setItem('currentSubject', subject);
+            sessionStorage.setItem('currentChapter', chapter);
+            
+            // Enable chat interface
+            document.getElementById('chatInput').style.display = 'flex';
+            
+            // Clear and initialize chat
+            const chatContainer = document.getElementById('chat');
+            chatContainer.innerHTML = `
+                <div class="message bot">
+                    <div class="bubble bot">
+                        You're now chatting about <strong>${chapter}</strong> in <strong>${subject}</strong>.
+                        Ask me anything!
+                    </div>
+                </div>
+            `;
+        }
+        
+        // Reuse your existing handleQuestion and other chat functions from script.js
+        function handleQuestion(event) {
+            if (event.key === 'Enter' || event.type === 'click') {
+                const subject = sessionStorage.getItem('currentSubject');
+                const chapter = sessionStorage.getItem('currentChapter');
+                const question = document.getElementById('userQuestion').value.trim();
+                
+                if (!question) return;
+                
+                // Construct the full path to the PDF in Google Cloud Storage
+                const fullPath = `gs://rag-project-storagebucket/${subject}/${chapter.replace(/ /g, '_')}.pdf`;
+                
+                // Call your existing askQuestion function with the path
+                askQuestion(fullPath, question);
+            }
+        }
+    </script>
+    
+    <script src="/static/script1.js"></script>
+</body>
+</html>

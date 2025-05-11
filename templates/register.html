@@ -1,0 +1,256 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Register | AI Tutor</title>
+    <link href="https://fonts.googleapis.com/css2?family=Nunito+Sans:wght@400;600;700&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --primary-color: #4a1fb8;
+            --secondary-color: #6c5ce7;
+            --light-color: #f8f9fa;
+            --dark-color: #343a40;
+            --success-color: #28a745;
+            --danger-color: #dc3545;
+        }
+
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+        }
+
+        body {
+            font-family: 'Nunito Sans', sans-serif;
+            background: linear-gradient(135deg, #f5f7fa 0%, #c3cfe2 100%);
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            height: 100vh;
+            padding: 20px;
+        }
+
+        .auth-container {
+            width: 100%;
+            max-width: 400px;
+            background: #fff;
+            border-radius: 16px;
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.1);
+            overflow: hidden;
+            animation: fadeIn 0.5s ease;
+        }
+
+        .auth-header {
+            padding: 30px;
+            background: var(--primary-color);
+            color: white;
+            text-align: center;
+        }
+
+        .auth-header h1 {
+            font-size: 24px;
+            margin-bottom: 10px;
+        }
+
+        .auth-header p {
+            font-size: 14px;
+            opacity: 0.8;
+        }
+
+        .auth-body {
+            padding: 30px;
+        }
+
+        .form-group {
+            margin-bottom: 20px;
+        }
+
+        .form-group label {
+            display: block;
+            margin-bottom: 8px;
+            font-size: 14px;
+            font-weight: 600;
+            color: var(--dark-color);
+        }
+
+        .form-control {
+            width: 100%;
+            padding: 12px 15px;
+            border: 1px solid #ddd;
+            border-radius: 8px;
+            font-size: 14px;
+            transition: all 0.3s;
+        }
+
+        .form-control:focus {
+            outline: none;
+            border-color: var(--primary-color);
+            box-shadow: 0 0 0 3px rgba(74, 31, 184, 0.1);
+        }
+
+        .btn {
+            display: block;
+            width: 100%;
+            padding: 12px;
+            border: none;
+            border-radius: 8px;
+            font-size: 16px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s;
+        }
+
+        .btn-primary {
+            background: var(--primary-color);
+            color: white;
+        }
+
+        .btn-primary:hover {
+            background: #3a14a6;
+        }
+
+        .auth-footer {
+            text-align: center;
+            padding-bottom: 20px;
+            font-size: 14px;
+            color: #666;
+        }
+
+        .auth-footer a {
+            color: var(--primary-color);
+            text-decoration: none;
+        }
+
+        .auth-footer a:hover {
+            text-decoration: underline;
+        }
+
+        .error-message {
+            color: var(--danger-color);
+            font-size: 14px;
+            margin-top: 5px;
+        }
+
+        @keyframes fadeIn {
+            from {
+                opacity: 0;
+                transform: translateY(-20px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+        .hidden {
+            display: none;
+        }
+    
+    </style>
+</head>
+<body>
+    <div class="auth-container">
+        <div class="auth-header">
+            <h1>Create Account</h1>
+            <p>Start your learning journey with AI Tutor</p>
+        </div>
+        <div class="auth-body">
+            <form id="registerForm">
+                <div class="form-group">
+                    <label for="name">Full Name</label>
+                    <input type="text" id="name" name="name" class="form-control" placeholder="Enter your full name" required>
+                </div>
+                <div class="form-group">
+                    <label for="email">Email</label>
+                    <input type="email" id="email" name="email" class="form-control" placeholder="Enter your email" required>
+                </div>
+                <div class="form-group">
+                    <label for="password">Password</label>
+                    <input type="password" id="password" name="password" class="form-control" placeholder="Enter your password" required>
+                </div>
+                
+                <!-- New Education Fields -->
+                <div class="form-group">
+                    <label for="board">Education Board</label>
+                    <select id="board" name="board" class="form-control" required>
+                        <option value="" disabled selected>Select Board</option>
+                        <option value="NCERT">NCERT</option>
+                        <option value="ICSE">ICSE</option>
+                        <option value="State">State Board</option>
+                    </select>
+                </div>
+                
+                <div class="form-group">
+                    <label for="class">Class</label>
+                    <select id="class" name="class" class="form-control" required onchange="toggleStreamField()">
+                        <option value="" disabled selected>Select Class</option>
+                        <option value="6">Class 6</option>
+                        <option value="7">Class 7</option>
+                        <option value="8">Class 8</option>
+                        <option value="9">Class 9</option>
+                        <option value="10">Class 10</option>
+                        <option value="11">Class 11</option>
+                        <option value="12">Class 12</option>
+                    </select>
+                </div>
+                
+                <div class="form-group hidden" id="streamGroup">
+                    <label for="stream">Stream (For 11th/12th)</label>
+                    <select id="stream" name="stream" class="form-control">
+                        <option value="Science">Science</option>
+                        <option value="Commerce">Commerce</option>
+                        <option value="Arts">Arts</option>
+                    </select>
+                </div>
+                
+                <button type="submit" class="btn btn-primary">Register</button>
+            </form>
+        </div>
+        <div class="auth-footer">
+            Already have an account? <a href="/login.html">Login here</a>
+        </div>
+    </div>
+
+    <script>
+        function toggleStreamField() {
+            const classValue = document.getElementById('class').value;
+            const streamGroup = document.getElementById('streamGroup');
+            
+            if (classValue === '11' || classValue === '12') {
+                streamGroup.classList.remove('hidden');
+                document.getElementById('stream').required = true;
+            } else {
+                streamGroup.classList.add('hidden');
+                document.getElementById('stream').required = false;
+            }
+        }
+
+        document.getElementById('registerForm').addEventListener('submit', async (e) => {
+            e.preventDefault();
+            
+            const userData = {
+                name: document.getElementById('name').value,
+                email: document.getElementById('email').value,
+                password: document.getElementById('password').value,
+                board: document.getElementById('board').value,
+                class: document.getElementById('class').value,
+                stream: document.getElementById('class').value >= 11 ? 
+                       document.getElementById('stream').value : 'NA'
+            };
+
+            const response = await fetch('/api/register', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify(userData)
+            });
+
+            const result = await response.json();
+            if (result.status === 'success') {
+                window.location.href = '/otp_verification.html';
+            } else {
+                alert(result.message || 'Registration failed');
+            }
+        });
+    </script>
+</body>
+</html>
